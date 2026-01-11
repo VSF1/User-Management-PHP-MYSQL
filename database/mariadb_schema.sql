@@ -32,7 +32,7 @@ CREATE TABLE `admin` (
   `id` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
   `email` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL
+  `password` varchar(256) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
@@ -40,7 +40,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`id`, `username`, `email`, `password`) VALUES
-(1, 'admin', 'admin@admin.com', '9ae2be73b58b565bce3e47493a56e26a');
+(1, 'admin', 'admin@admin.com', '$2y$10$L4kM9ZMFq0pgtgZbFe0Bcu0FabVSNTrP1L6FVvL0mk7.9BuHJSR8G');
 
 -- --------------------------------------------------------
 
@@ -63,7 +63,7 @@ CREATE TABLE `deleteduser` (
 CREATE TABLE `feedback` (
   `id` int(11) NOT NULL,
   `sender` varchar(50) NOT NULL,
-  `reciver` varchar(50) NOT NULL,
+  `receiver` varchar(50) NOT NULL,
   `title` varchar(100) NOT NULL,
   `feedbackdata` varchar(500) NOT NULL,
   `attachment` varchar(50) NOT NULL
@@ -78,7 +78,7 @@ CREATE TABLE `feedback` (
 CREATE TABLE `notification` (
   `id` int(11) NOT NULL,
   `notiuser` varchar(50) NOT NULL,
-  `notireciver` varchar(50) NOT NULL,
+  `notireceiver` varchar(50) NOT NULL,
   `notitype` varchar(50) NOT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

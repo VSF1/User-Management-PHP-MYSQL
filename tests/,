@@ -1,0 +1,124 @@
+<?php
+// Simple Unit Test for User Class
+
+// Adjust paths as necessary depending on where you run this script from
+require_once __DIR__ . '/../includes/User.php';
+require_once __DIR__ . '/../includes/Logger.php';
+
+echo "Setting up Test Environment...\n";
+
+// Setup In-Memory SQLite Database for testing
+try {
+    $dbh = new PDO('sqlite::memory:');
+    $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Create necessary tables
+    $dbh->exec("CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        gender VARCHAR(50) NOT NULL,
+        mobile VARCHAR(50) NOT NULL,
+        designation VARCHAR(255) NOT NULL,
+        image VARCHAR(255) NOT NULL,
+        status INTEGER NOT NULL DEFAULT 1
+    )");
+
+    $dbh->exec("CREATE TABLE deleteduser (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email VARCHAR(255) NOT NULL,
+        deltime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+
+} catch (PDOException $e) {
+    die("DB Setup Failed: " . $e->getMessage());
+}
+
+$user = new User($dbh);
+
+echo "Running User Class Tests...\n-------------------------\n";
+
+// Test Data
+$name = "Test User";
+$email = "test@example.com";
+$password = "password123";
+$gender = "Male";
+$mobile = "1234567890";
+$designation = "Tester";
+$image = "test.jpg";
+
+// Test 1: Registration
+$userId = $user->register($name, $email, $password, $gender, $mobile, $designation, $image);
+
+if ($userId) {
+    echo "[PASS] Register User (ID: $userId)\n";
+} else {
+    echo "[FAIL] Register User\n";
+}
+
+// Test 2: Login (Success)
+$loggedInUser = $user->login($email, $password);
+if ($loggedInUser && $loggedInUser->email === $email) {
+    echo "[PASS] Login Success\n";
+} else {
+    echo "[FAIL] Login Success\n";
+}
+
+// Test 3: Login (Fail - Wrong Password)
+$loginFail = $user->login($email, "wrongpassword");
+if ($loginFail === false) {
+    echo "[PASS] Login Fail (Wrong Password)\n";
+} else {
+    echo "[FAIL] Login Fail (Wrong Password) - Should have failed\n";
+}
+
+// Test 4: Get User
+$fetchedUser = $user->getUser($email);
+if ($fetchedUser && $fetchedUser->name === $name) {
+    echo "[PASS] Get User\n";
+} else {
+    echo "[FAIL] Get User\n";
+}
+
+// Test 5: Update Profile
+$newName = "Updated Name";
+$updateResult = $user->updateProfile($userId, $newName, $email, $mobile, $designation, $image);
+$updatedUser = $user->getUser($email);
+
+if ($updateResult && $updatedUser->name === $newName) {
+    echo "[PASS] Update Profile\n";
+} else {
+    echo "[FAIL] Update Profile\n";
+}
+
+// Test 6: Change Password
+$newPass = "newpassword123";
+$changePassResult = $user->changePassword($email, $password, $newPass);
+if ($changePassResult) {
+    // Verify login with new password
+    if ($user->login($email, $newPass)) {
+        echo "[PASS] Change Password\n";
+    } else {
+        echo "[FAIL] Change Password - Login with new password failed\n";
+    }
+} else {
+    echo "[FAIL] Change Password\n";
+}
+
+// Test 7: Delete User
+$deleteResult = $user->delete($userId);
+if ($deleteResult) {
+    // Verify user is gone
+    $deletedUserCheck = $user->getUser($email);
+    if (!$deletedUserCheck) {
+        echo "[PASS] Delete User\n";
+    } else {
+        echo "[FAIL] Delete User - User still exists\n";
+    }
+} else {
+    echo "[FAIL] Delete User\n";
+}
+
+echo "-------------------------\nTests Completed.\n";
+?>
